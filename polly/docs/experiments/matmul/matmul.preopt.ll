@@ -1,164 +1,161 @@
 ; ModuleID = 'matmul.ll'
 source_filename = "matmul.c"
-target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-%struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i64, i16, i8, [1 x i8], i8*, i64, i8*, i8*, i8*, i8*, i64, i32, [20 x i8] }
-%struct._IO_marker = type { %struct._IO_marker*, %struct._IO_FILE*, i32 }
-
-@A = common dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
-@B = common dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
-@stdout = external dso_local global %struct._IO_FILE*, align 8
+@A = dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
+@B = dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
+@stdout = external dso_local global ptr, align 8
 @.str = private unnamed_addr constant [5 x i8] c"%lf \00", align 1
-@C = common dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
+@C = dso_local global [1536 x [1536 x float]] zeroinitializer, align 16
 @.str.1 = private unnamed_addr constant [2 x i8] c"\0A\00", align 1
 
 ; Function Attrs: noinline nounwind uwtable
 define dso_local void @init_array() #0 {
-entry:
-  br label %entry.split
+  br label %.preheader
 
-entry.split:                                      ; preds = %entry
-  br label %for.cond1.preheader
+.preheader:                                       ; preds = %0, %11
+  %indvars.iv4 = phi i64 [ 0, %0 ], [ %indvars.iv.next5, %11 ]
+  br label %1
 
-for.cond1.preheader:                              ; preds = %entry.split, %for.inc17
-  %indvars.iv4 = phi i64 [ 0, %entry.split ], [ %indvars.iv.next5, %for.inc17 ]
-  br label %for.body3
-
-for.body3:                                        ; preds = %for.cond1.preheader, %for.body3
-  %indvars.iv = phi i64 [ 0, %for.cond1.preheader ], [ %indvars.iv.next, %for.body3 ]
-  %0 = mul nuw nsw i64 %indvars.iv, %indvars.iv4
-  %1 = trunc i64 %0 to i32
-  %rem = and i32 %1, 1023
-  %add = add nuw nsw i32 %rem, 1
-  %conv = sitofp i32 %add to double
-  %div = fmul double %conv, 5.000000e-01
-  %conv4 = fptrunc double %div to float
-  %arrayidx6 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @A, i64 0, i64 %indvars.iv4, i64 %indvars.iv
-  store float %conv4, float* %arrayidx6, align 4
-  %arrayidx16 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @B, i64 0, i64 %indvars.iv4, i64 %indvars.iv
-  store float %conv4, float* %arrayidx16, align 4
+1:                                                ; preds = %.preheader, %1
+  %indvars.iv = phi i64 [ 0, %.preheader ], [ %indvars.iv.next, %1 ]
+  %2 = mul nuw nsw i64 %indvars.iv, %indvars.iv4
+  %3 = trunc i64 %2 to i32
+  %4 = and i32 %3, 1023
+  %5 = add nuw nsw i32 %4, 1
+  %6 = sitofp i32 %5 to double
+  %7 = fmul double %6, 5.000000e-01
+  %8 = fptrunc double %7 to float
+  %9 = getelementptr inbounds [1536 x [1536 x float]], ptr @A, i64 0, i64 %indvars.iv4, i64 %indvars.iv
+  store float %8, ptr %9, align 4
+  %10 = getelementptr inbounds [1536 x [1536 x float]], ptr @B, i64 0, i64 %indvars.iv4, i64 %indvars.iv
+  store float %8, ptr %10, align 4
   %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
   %exitcond = icmp ne i64 %indvars.iv.next, 1536
-  br i1 %exitcond, label %for.body3, label %for.inc17
+  br i1 %exitcond, label %1, label %11, !llvm.loop !4
 
-for.inc17:                                        ; preds = %for.body3
+11:                                               ; preds = %1
   %indvars.iv.next5 = add nuw nsw i64 %indvars.iv4, 1
   %exitcond6 = icmp ne i64 %indvars.iv.next5, 1536
-  br i1 %exitcond6, label %for.cond1.preheader, label %for.end19
+  br i1 %exitcond6, label %.preheader, label %12, !llvm.loop !6
 
-for.end19:                                        ; preds = %for.inc17
+12:                                               ; preds = %11
   ret void
 }
 
 ; Function Attrs: noinline nounwind uwtable
 define dso_local void @print_array() #0 {
-entry:
-  br label %entry.split
+  br label %.preheader
 
-entry.split:                                      ; preds = %entry
-  br label %for.cond1.preheader
+.preheader:                                       ; preds = %0, %13
+  %indvars.iv5 = phi i64 [ 0, %0 ], [ %indvars.iv.next6, %13 ]
+  br label %1
 
-for.cond1.preheader:                              ; preds = %entry.split, %for.end
-  %indvars.iv6 = phi i64 [ 0, %entry.split ], [ %indvars.iv.next7, %for.end ]
-  %0 = load %struct._IO_FILE*, %struct._IO_FILE** @stdout, align 8
-  br label %for.body3
+1:                                                ; preds = %.preheader, %12
+  %indvars.iv = phi i64 [ 0, %.preheader ], [ %indvars.iv.next, %12 ]
+  %2 = load ptr, ptr @stdout, align 8
+  %3 = getelementptr inbounds [1536 x [1536 x float]], ptr @C, i64 0, i64 %indvars.iv5, i64 %indvars.iv
+  %4 = load float, ptr %3, align 4
+  %5 = fpext float %4 to double
+  %6 = tail call i32 (ptr, ptr, ...) @fprintf(ptr noundef %2, ptr noundef nonnull @.str, double noundef %5) #4
+  %7 = trunc i64 %indvars.iv to i32
+  %8 = urem i32 %7, 80
+  %9 = icmp eq i32 %8, 79
+  br i1 %9, label %10, label %12
 
-for.body3:                                        ; preds = %for.cond1.preheader, %for.inc
-  %indvars.iv = phi i64 [ 0, %for.cond1.preheader ], [ %indvars.iv.next, %for.inc ]
-  %1 = phi %struct._IO_FILE* [ %0, %for.cond1.preheader ], [ %5, %for.inc ]
-  %arrayidx5 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @C, i64 0, i64 %indvars.iv6, i64 %indvars.iv
-  %2 = load float, float* %arrayidx5, align 4
-  %conv = fpext float %2 to double
-  %call = tail call i32 (%struct._IO_FILE*, i8*, ...) @fprintf(%struct._IO_FILE* %1, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str, i64 0, i64 0), double %conv) #2
-  %3 = trunc i64 %indvars.iv to i32
-  %rem = urem i32 %3, 80
-  %cmp6 = icmp eq i32 %rem, 79
-  br i1 %cmp6, label %if.then, label %for.inc
+10:                                               ; preds = %1
+  %11 = load ptr, ptr @stdout, align 8
+  %fputc2 = tail call i32 @fputc(i32 10, ptr %11)
+  br label %12
 
-if.then:                                          ; preds = %for.body3
-  %4 = load %struct._IO_FILE*, %struct._IO_FILE** @stdout, align 8
-  %fputc3 = tail call i32 @fputc(i32 10, %struct._IO_FILE* %4)
-  br label %for.inc
-
-for.inc:                                          ; preds = %for.body3, %if.then
+12:                                               ; preds = %1, %10
   %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
-  %5 = load %struct._IO_FILE*, %struct._IO_FILE** @stdout, align 8
   %exitcond = icmp ne i64 %indvars.iv.next, 1536
-  br i1 %exitcond, label %for.body3, label %for.end
+  br i1 %exitcond, label %1, label %13, !llvm.loop !7
 
-for.end:                                          ; preds = %for.inc
-  %.lcssa = phi %struct._IO_FILE* [ %5, %for.inc ]
-  %fputc = tail call i32 @fputc(i32 10, %struct._IO_FILE* %.lcssa)
-  %indvars.iv.next7 = add nuw nsw i64 %indvars.iv6, 1
-  %exitcond8 = icmp ne i64 %indvars.iv.next7, 1536
-  br i1 %exitcond8, label %for.cond1.preheader, label %for.end12
+13:                                               ; preds = %12
+  %14 = load ptr, ptr @stdout, align 8
+  %fputc = tail call i32 @fputc(i32 10, ptr %14)
+  %indvars.iv.next6 = add nuw nsw i64 %indvars.iv5, 1
+  %exitcond7 = icmp ne i64 %indvars.iv.next6, 1536
+  br i1 %exitcond7, label %.preheader, label %15, !llvm.loop !8
 
-for.end12:                                        ; preds = %for.end
+15:                                               ; preds = %13
   ret void
 }
 
-declare dso_local i32 @fprintf(%struct._IO_FILE*, i8*, ...) #1
+declare dso_local i32 @fprintf(ptr noundef, ptr noundef, ...) #1
 
 ; Function Attrs: noinline nounwind uwtable
 define dso_local i32 @main() #0 {
-entry:
-  br label %entry.split
-
-entry.split:                                      ; preds = %entry
   tail call void @init_array()
-  br label %for.cond1.preheader
+  br label %.preheader
 
-for.cond1.preheader:                              ; preds = %entry.split, %for.inc28
-  %indvars.iv7 = phi i64 [ 0, %entry.split ], [ %indvars.iv.next8, %for.inc28 ]
-  br label %for.body3
+.preheader:                                       ; preds = %0, %11
+  %indvars.iv9 = phi i64 [ 0, %0 ], [ %indvars.iv.next10, %11 ]
+  br label %1
 
-for.body3:                                        ; preds = %for.cond1.preheader, %for.inc25
-  %indvars.iv4 = phi i64 [ 0, %for.cond1.preheader ], [ %indvars.iv.next5, %for.inc25 ]
-  %arrayidx5 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @C, i64 0, i64 %indvars.iv7, i64 %indvars.iv4
-  store float 0.000000e+00, float* %arrayidx5, align 4
-  br label %for.body8
+1:                                                ; preds = %.preheader, %10
+  %indvars.iv6 = phi i64 [ 0, %.preheader ], [ %indvars.iv.next7, %10 ]
+  %2 = getelementptr inbounds [1536 x [1536 x float]], ptr @C, i64 0, i64 %indvars.iv9, i64 %indvars.iv6
+  store float 0.000000e+00, ptr %2, align 4
+  br label %3
 
-for.body8:                                        ; preds = %for.body3, %for.body8
-  %indvars.iv = phi i64 [ 0, %for.body3 ], [ %indvars.iv.next, %for.body8 ]
-  %0 = load float, float* %arrayidx5, align 4
-  %arrayidx16 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @A, i64 0, i64 %indvars.iv7, i64 %indvars.iv
-  %1 = load float, float* %arrayidx16, align 4
-  %arrayidx20 = getelementptr inbounds [1536 x [1536 x float]], [1536 x [1536 x float]]* @B, i64 0, i64 %indvars.iv, i64 %indvars.iv4
-  %2 = load float, float* %arrayidx20, align 4
-  %mul = fmul float %1, %2
-  %add = fadd float %0, %mul
-  store float %add, float* %arrayidx5, align 4
+3:                                                ; preds = %1, %3
+  %indvars.iv = phi i64 [ 0, %1 ], [ %indvars.iv.next, %3 ]
+  %4 = load float, ptr %2, align 4
+  %5 = getelementptr inbounds [1536 x [1536 x float]], ptr @A, i64 0, i64 %indvars.iv9, i64 %indvars.iv
+  %6 = load float, ptr %5, align 4
+  %7 = getelementptr inbounds [1536 x [1536 x float]], ptr @B, i64 0, i64 %indvars.iv, i64 %indvars.iv6
+  %8 = load float, ptr %7, align 4
+  %9 = tail call float @llvm.fmuladd.f32(float %6, float %8, float %4)
+  store float %9, ptr %2, align 4
   %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
   %exitcond = icmp ne i64 %indvars.iv.next, 1536
-  br i1 %exitcond, label %for.body8, label %for.inc25
+  br i1 %exitcond, label %3, label %10, !llvm.loop !9
 
-for.inc25:                                        ; preds = %for.body8
-  %indvars.iv.next5 = add nuw nsw i64 %indvars.iv4, 1
-  %exitcond6 = icmp ne i64 %indvars.iv.next5, 1536
-  br i1 %exitcond6, label %for.body3, label %for.inc28
+10:                                               ; preds = %3
+  %indvars.iv.next7 = add nuw nsw i64 %indvars.iv6, 1
+  %exitcond8 = icmp ne i64 %indvars.iv.next7, 1536
+  br i1 %exitcond8, label %1, label %11, !llvm.loop !10
 
-for.inc28:                                        ; preds = %for.inc25
-  %indvars.iv.next8 = add nuw nsw i64 %indvars.iv7, 1
-  %exitcond9 = icmp ne i64 %indvars.iv.next8, 1536
-  br i1 %exitcond9, label %for.cond1.preheader, label %for.end30
+11:                                               ; preds = %10
+  %indvars.iv.next10 = add nuw nsw i64 %indvars.iv9, 1
+  %exitcond11 = icmp ne i64 %indvars.iv.next10, 1536
+  br i1 %exitcond11, label %.preheader, label %12, !llvm.loop !11
 
-for.end30:                                        ; preds = %for.inc28
+12:                                               ; preds = %11
   ret i32 0
 }
 
-; Function Attrs: nounwind
-declare i64 @fwrite(i8* nocapture, i64, i64, %struct._IO_FILE* nocapture) #2
+; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
+declare float @llvm.fmuladd.f32(float, float, float) #2
 
-; Function Attrs: nounwind
-declare i32 @fputc(i32, %struct._IO_FILE* nocapture) #2
+; Function Attrs: nofree nounwind
+declare noundef i64 @fwrite(ptr nocapture noundef, i64 noundef, i64 noundef, ptr nocapture noundef) #3
 
-attributes #0 = { noinline nounwind uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "frame-pointer"="all" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "frame-pointer"="all" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { nounwind }
+; Function Attrs: nofree nounwind
+declare noundef i32 @fputc(i32 noundef, ptr nocapture noundef) #3
 
-!llvm.module.flags = !{!0}
-!llvm.ident = !{!1}
+attributes #0 = { noinline nounwind uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #2 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
+attributes #3 = { nofree nounwind }
+attributes #4 = { nounwind }
+
+!llvm.module.flags = !{!0, !1, !2}
+!llvm.ident = !{!3}
 
 !0 = !{i32 1, !"wchar_size", i32 4}
-!1 = !{!"clang version 8.0.0 (trunk 342834) (llvm/trunk 342856)"}
+!1 = !{i32 7, !"uwtable", i32 1}
+!2 = !{i32 7, !"frame-pointer", i32 2}
+!3 = !{!"clang version 14.0.6"}
+!4 = distinct !{!4, !5}
+!5 = !{!"llvm.loop.mustprogress"}
+!6 = distinct !{!6, !5}
+!7 = distinct !{!7, !5}
+!8 = distinct !{!8, !5}
+!9 = distinct !{!9, !5}
+!10 = distinct !{!10, !5}
+!11 = distinct !{!11, !5}

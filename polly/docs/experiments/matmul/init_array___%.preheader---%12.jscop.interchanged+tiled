@@ -18,22 +18,22 @@
       }
    ],
    "context": "{  :  }",
-   "name": "%for.cond1.preheader---%for.end19",
+   "name": "%.preheader---%12",
    "statements": [
       {
          "accesses": [
             {
                "kind": "write",
-               "relation": "{ Stmt_for_body3[i0, i1] -> MemRef_A[i0, i1] }"
+               "relation": "{ Stmt1[i0, i1] -> MemRef_A[i0, i1] }"
             },
             {
                "kind": "write",
-               "relation": "{ Stmt_for_body3[i0, i1] -> MemRef_B[i0, i1] }"
+               "relation": "{ Stmt1[i0, i1] -> MemRef_B[i0, i1] }"
             }
          ],
-         "domain": "{ Stmt_for_body3[i0, i1] : 0 <= i0 <= 1535 and 0 <= i1 <= 1535 }",
-         "name": "Stmt_for_body3",
-         "schedule": "{ Stmt_for_body3[i0, i1] -> [i0, i1] }"
+         "domain": "{ Stmt1[i0, i1] : 0 <= i0 <= 1535 and 0 <= i1 <= 1535 }",
+         "name": "Stmt1",
+         "schedule": "{ Stmt1[i0, i1] -> [i0, i1] }"
       }
    ]
 }

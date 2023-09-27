@@ -1,80 +1,121 @@
 	.text
 	.file	"matmul.c"
-	.section	.rodata.cst8,"aM",@progbits,8
-	.p2align	3               # -- Begin function init_array
+	.section	.rodata.cst16,"aM",@progbits,16
+	.p2align	4, 0x0                          # -- Begin function init_array
 .LCPI0_0:
-	.quad	4602678819172646912     # double 0.5
+	.quad	2                               # 0x2
+	.quad	3                               # 0x3
+.LCPI0_1:
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	1                               # 0x1
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+	.byte	0                               # 0x0
+.LCPI0_2:
+	.long	1023                            # 0x3ff
+	.long	1023                            # 0x3ff
+	.long	1023                            # 0x3ff
+	.long	1023                            # 0x3ff
+.LCPI0_3:
+	.quad	0x3fe0000000000000              # double 0.5
+	.quad	0x3fe0000000000000              # double 0.5
+.LCPI0_4:
+	.quad	4                               # 0x4
+	.quad	4                               # 0x4
 	.text
 	.globl	init_array
 	.p2align	4, 0x90
 	.type	init_array,@function
 init_array:                             # @init_array
+.Linit_array$local:
+	.type	.Linit_array$local,@function
 	.cfi_startproc
-# %bb.0:                                # %entry
+# %bb.0:
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
-	leaq	B(%rip), %rax
-	leaq	A(%rip), %rcx
-	xorl	%r8d, %r8d
-	movsd	.LCPI0_0(%rip), %xmm0   # xmm0 = mem[0],zero
-	xorl	%r9d, %r9d
+	xorl	%eax, %eax
+	movdqa	.LCPI0_0(%rip), %xmm0           # xmm0 = [2,3]
+	movdqa	.LCPI0_1(%rip), %xmm1           # xmm1 = [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0]
+	movaps	.LCPI0_2(%rip), %xmm2           # xmm2 = [1023,1023,1023,1023]
+	pcmpeqd	%xmm3, %xmm3
+	movapd	.LCPI0_3(%rip), %xmm4           # xmm4 = [5.0E-1,5.0E-1]
+	leaq	.LA$local(%rip), %rcx
+	leaq	.LB$local(%rip), %rdx
+	movdqa	.LCPI0_4(%rip), %xmm5           # xmm5 = [4,4]
+	xorl	%esi, %esi
 	.p2align	4, 0x90
-.LBB0_1:                                # %for.cond1.preheader
+.LBB0_1:                                # %vector.ph
                                         # =>This Loop Header: Depth=1
                                         #     Child Loop BB0_2 Depth 2
-	movl	$1, %edi
-	xorl	%edx, %edx
+	movq	%rsi, %xmm6
+	pshufd	$68, %xmm6, %xmm6               # xmm6 = xmm6[0,1,0,1]
+	xorl	%edi, %edi
+	movdqa	%xmm1, %xmm7
+	movdqa	%xmm0, %xmm8
 	.p2align	4, 0x90
-.LBB0_2:                                # %for.body3
+.LBB0_2:                                # %vector.body
                                         #   Parent Loop BB0_1 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	movl	%edx, %esi
-	andl	$1022, %esi             # imm = 0x3FE
-	orl	$1, %esi
-	xorps	%xmm1, %xmm1
-	cvtsi2sdl	%esi, %xmm1
-	mulsd	%xmm0, %xmm1
-	cvtsd2ss	%xmm1, %xmm1
-	movss	%xmm1, -4(%rcx,%rdi,4)
-	movss	%xmm1, -4(%rax,%rdi,4)
-	leal	(%r9,%rdx), %esi
-	andl	$1023, %esi             # imm = 0x3FF
-	addl	$1, %esi
-	xorps	%xmm1, %xmm1
-	cvtsi2sdl	%esi, %xmm1
-	mulsd	%xmm0, %xmm1
-	cvtsd2ss	%xmm1, %xmm1
-	movss	%xmm1, (%rcx,%rdi,4)
-	movss	%xmm1, (%rax,%rdi,4)
-	addq	$2, %rdi
-	addl	%r8d, %edx
-	cmpq	$1537, %rdi             # imm = 0x601
+	movdqa	%xmm7, %xmm9
+	pmuludq	%xmm6, %xmm9
+	movdqa	%xmm8, %xmm10
+	pmuludq	%xmm6, %xmm10
+	shufps	$136, %xmm10, %xmm9             # xmm9 = xmm9[0,2],xmm10[0,2]
+	andps	%xmm2, %xmm9
+	psubd	%xmm3, %xmm9
+	cvtdq2pd	%xmm9, %xmm10
+	pshufd	$238, %xmm9, %xmm9              # xmm9 = xmm9[2,3,2,3]
+	cvtdq2pd	%xmm9, %xmm9
+	mulpd	%xmm4, %xmm9
+	mulpd	%xmm4, %xmm10
+	cvtpd2ps	%xmm10, %xmm10
+	cvtpd2ps	%xmm9, %xmm9
+	unpcklpd	%xmm9, %xmm10                   # xmm10 = xmm10[0],xmm9[0]
+	leaq	(%rax,%rdi), %r8
+	movapd	%xmm10, (%rcx,%r8)
+	movapd	%xmm10, (%rdx,%r8)
+	paddq	%xmm5, %xmm7
+	paddq	%xmm5, %xmm8
+	addq	$16, %rdi
+	cmpq	$6144, %rdi                     # imm = 0x1800
 	jne	.LBB0_2
-# %bb.3:                                # %for.inc17
+# %bb.3:                                # %middle.block
                                         #   in Loop: Header=BB0_1 Depth=1
-	addq	$1, %r9
-	addq	$6144, %rax             # imm = 0x1800
-	addq	$6144, %rcx             # imm = 0x1800
-	addl	$2, %r8d
-	cmpq	$1536, %r9              # imm = 0x600
+	incq	%rsi
+	addq	$6144, %rax                     # imm = 0x1800
+	cmpq	$1536, %rsi                     # imm = 0x600
 	jne	.LBB0_1
-# %bb.4:                                # %for.end19
+# %bb.4:
 	popq	%rbp
 	.cfi_def_cfa %rsp, 8
 	retq
 .Lfunc_end0:
 	.size	init_array, .Lfunc_end0-init_array
+	.size	.Linit_array$local, .Lfunc_end0-init_array
 	.cfi_endproc
                                         # -- End function
-	.globl	print_array             # -- Begin function print_array
+	.globl	print_array                     # -- Begin function print_array
 	.p2align	4, 0x90
 	.type	print_array,@function
 print_array:                            # @print_array
+.Lprint_array$local:
+	.type	.Lprint_array$local,@function
 	.cfi_startproc
-# %bb.0:                                # %entry
+# %bb.0:
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset %rbp, -16
@@ -91,56 +132,54 @@ print_array:                            # @print_array
 	.cfi_offset %r13, -40
 	.cfi_offset %r14, -32
 	.cfi_offset %r15, -24
-	leaq	C(%rip), %r13
+	leaq	.LC$local(%rip), %r14
 	xorl	%eax, %eax
-	movl	$3435973837, %r12d      # imm = 0xCCCCCCCD
-	leaq	.L.str(%rip), %r14
+	movl	$3435973837, %r12d              # imm = 0xCCCCCCCD
+	leaq	.L.str(%rip), %rbx
+	jmp	.LBB1_1
 	.p2align	4, 0x90
-.LBB1_1:                                # %for.cond1.preheader
+.LBB1_5:                                #   in Loop: Header=BB1_1 Depth=1
+	movq	stdout(%rip), %rsi
+	movl	$10, %edi
+	callq	fputc@PLT
+	movq	-48(%rbp), %rax                 # 8-byte Reload
+	incq	%rax
+	addq	$6144, %r14                     # imm = 0x1800
+	cmpq	$1536, %rax                     # imm = 0x600
+	je	.LBB1_6
+.LBB1_1:                                # %.preheader
                                         # =>This Loop Header: Depth=1
                                         #     Child Loop BB1_2 Depth 2
-	movq	%rax, -48(%rbp)         # 8-byte Spill
-	movq	stdout(%rip), %rsi
-	xorl	%ebx, %ebx
+	movq	%rax, -48(%rbp)                 # 8-byte Spill
+	xorl	%r13d, %r13d
+	jmp	.LBB1_2
 	.p2align	4, 0x90
-.LBB1_2:                                # %for.body3
-                                        #   Parent Loop BB1_1 Depth=1
+.LBB1_4:                                #   in Loop: Header=BB1_2 Depth=2
+	incq	%r13
+	cmpq	$1536, %r13                     # imm = 0x600
+	je	.LBB1_5
+.LBB1_2:                                #   Parent Loop BB1_1 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	movl	%ebx, %eax
+	movl	%r13d, %eax
 	imulq	%r12, %rax
 	shrq	$38, %rax
 	leal	(%rax,%rax,4), %r15d
 	shll	$4, %r15d
 	addl	$79, %r15d
-	movss	(%r13,%rbx,4), %xmm0    # xmm0 = mem[0],zero,zero,zero
+	movq	stdout(%rip), %rdi
+	movss	(%r14,%r13,4), %xmm0            # xmm0 = mem[0],zero,zero,zero
 	cvtss2sd	%xmm0, %xmm0
+	movq	%rbx, %rsi
 	movb	$1, %al
-	movq	%rsi, %rdi
-	movq	%r14, %rsi
 	callq	fprintf
-	cmpl	%ebx, %r15d
+	cmpl	%r13d, %r15d
 	jne	.LBB1_4
-# %bb.3:                                # %if.then
-                                        #   in Loop: Header=BB1_2 Depth=2
+# %bb.3:                                #   in Loop: Header=BB1_2 Depth=2
 	movq	stdout(%rip), %rsi
 	movl	$10, %edi
 	callq	fputc@PLT
-.LBB1_4:                                # %for.inc
-                                        #   in Loop: Header=BB1_2 Depth=2
-	addq	$1, %rbx
-	movq	stdout(%rip), %rsi
-	cmpq	$1536, %rbx             # imm = 0x600
-	jne	.LBB1_2
-# %bb.5:                                # %for.end
-                                        #   in Loop: Header=BB1_1 Depth=1
-	movl	$10, %edi
-	callq	fputc@PLT
-	movq	-48(%rbp), %rax         # 8-byte Reload
-	addq	$1, %rax
-	addq	$6144, %r13             # imm = 0x1800
-	cmpq	$1536, %rax             # imm = 0x600
-	jne	.LBB1_1
-# %bb.6:                                # %for.end12
+	jmp	.LBB1_4
+.LBB1_6:
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%r12
@@ -152,96 +191,114 @@ print_array:                            # @print_array
 	retq
 .Lfunc_end1:
 	.size	print_array, .Lfunc_end1-print_array
+	.size	.Lprint_array$local, .Lfunc_end1-print_array
 	.cfi_endproc
                                         # -- End function
-	.globl	main                    # -- Begin function main
+	.globl	main                            # -- Begin function main
 	.p2align	4, 0x90
 	.type	main,@function
 main:                                   # @main
+.Lmain$local:
+	.type	.Lmain$local,@function
 	.cfi_startproc
-# %bb.0:                                # %entry
+# %bb.0:
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
-	callq	init_array
-	leaq	A(%rip), %rax
-	xorl	%r10d, %r10d
-	leaq	B(%rip), %r8
-	leaq	C(%rip), %r9
+	callq	.Linit_array$local
+	leaq	.LA$local(%rip), %rax
+	xorl	%ecx, %ecx
+	leaq	.LB$local(%rip), %rdx
+	leaq	.LC$local(%rip), %rsi
 	.p2align	4, 0x90
-.LBB2_1:                                # %for.cond1.preheader
+.LBB2_1:                                # %.preheader
                                         # =>This Loop Header: Depth=1
                                         #     Child Loop BB2_2 Depth 2
                                         #       Child Loop BB2_3 Depth 3
-	movq	%r8, %rsi
-	xorl	%edx, %edx
+	movq	%rdx, %rdi
+	xorl	%r8d, %r8d
 	.p2align	4, 0x90
-.LBB2_2:                                # %for.body3
-                                        #   Parent Loop BB2_1 Depth=1
+.LBB2_2:                                #   Parent Loop BB2_1 Depth=1
                                         # =>  This Loop Header: Depth=2
                                         #       Child Loop BB2_3 Depth 3
-	leaq	(%r10,%r10,2), %rcx
-	shlq	$11, %rcx
-	addq	%r9, %rcx
-	leaq	(%rcx,%rdx,4), %r11
-	movl	$0, (%rcx,%rdx,4)
+	leaq	(%rcx,%rcx,2), %r9
+	shlq	$11, %r9
+	addq	%rsi, %r9
+	leaq	(%r9,%r8,4), %r9
 	xorps	%xmm0, %xmm0
-	movl	$2, %ecx
-	movq	%rsi, %rdi
+	movl	$2, %r10d
+	movq	%rdi, %r11
 	.p2align	4, 0x90
-.LBB2_3:                                # %for.body8
-                                        #   Parent Loop BB2_1 Depth=1
+.LBB2_3:                                #   Parent Loop BB2_1 Depth=1
                                         #     Parent Loop BB2_2 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
-	movss	-8(%rax,%rcx,4), %xmm1  # xmm1 = mem[0],zero,zero,zero
-	mulss	(%rdi), %xmm1
-	movss	-4(%rax,%rcx,4), %xmm2  # xmm2 = mem[0],zero,zero,zero
+	movss	-8(%rax,%r10,4), %xmm1          # xmm1 = mem[0],zero,zero,zero
+	mulss	(%r11), %xmm1
+	movss	-4(%rax,%r10,4), %xmm2          # xmm2 = mem[0],zero,zero,zero
 	addss	%xmm0, %xmm1
-	mulss	6144(%rdi), %xmm2
+	mulss	6144(%r11), %xmm2
 	addss	%xmm1, %xmm2
-	movss	(%rax,%rcx,4), %xmm0    # xmm0 = mem[0],zero,zero,zero
-	mulss	12288(%rdi), %xmm0
+	movss	(%rax,%r10,4), %xmm0            # xmm0 = mem[0],zero,zero,zero
+	mulss	12288(%r11), %xmm0
 	addss	%xmm2, %xmm0
-	addq	$3, %rcx
-	addq	$18432, %rdi            # imm = 0x4800
-	cmpq	$1538, %rcx             # imm = 0x602
+	addq	$3, %r10
+	addq	$18432, %r11                    # imm = 0x4800
+	cmpq	$1538, %r10                     # imm = 0x602
 	jne	.LBB2_3
-# %bb.4:                                # %for.inc25
-                                        #   in Loop: Header=BB2_2 Depth=2
-	movss	%xmm0, (%r11)
-	addq	$1, %rdx
-	addq	$4, %rsi
-	cmpq	$1536, %rdx             # imm = 0x600
+# %bb.4:                                #   in Loop: Header=BB2_2 Depth=2
+	movss	%xmm0, (%r9)
+	incq	%r8
+	addq	$4, %rdi
+	cmpq	$1536, %r8                      # imm = 0x600
 	jne	.LBB2_2
-# %bb.5:                                # %for.inc28
-                                        #   in Loop: Header=BB2_1 Depth=1
-	addq	$1, %r10
-	addq	$6144, %rax             # imm = 0x1800
-	cmpq	$1536, %r10             # imm = 0x600
+# %bb.5:                                #   in Loop: Header=BB2_1 Depth=1
+	incq	%rcx
+	addq	$6144, %rax                     # imm = 0x1800
+	cmpq	$1536, %rcx                     # imm = 0x600
 	jne	.LBB2_1
-# %bb.6:                                # %for.end30
+# %bb.6:
 	xorl	%eax, %eax
 	popq	%rbp
 	.cfi_def_cfa %rsp, 8
 	retq
 .Lfunc_end2:
 	.size	main, .Lfunc_end2-main
+	.size	.Lmain$local, .Lfunc_end2-main
 	.cfi_endproc
                                         # -- End function
-	.type	A,@object               # @A
-	.comm	A,9437184,16
-	.type	B,@object               # @B
-	.comm	B,9437184,16
-	.type	.L.str,@object          # @.str
+	.type	A,@object                       # @A
+	.bss
+	.globl	A
+	.p2align	4, 0x0
+A:
+.LA$local:
+	.zero	9437184
+	.size	A, 9437184
+
+	.type	B,@object                       # @B
+	.globl	B
+	.p2align	4, 0x0
+B:
+.LB$local:
+	.zero	9437184
+	.size	B, 9437184
+
+	.type	.L.str,@object                  # @.str
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .L.str:
 	.asciz	"%lf "
 	.size	.L.str, 5
 
-	.type	C,@object               # @C
-	.comm	C,9437184,16
+	.type	C,@object                       # @C
+	.bss
+	.globl	C
+	.p2align	4, 0x0
+C:
+.LC$local:
+	.zero	9437184
+	.size	C, 9437184
 
-	.ident	"clang version 8.0.0 (trunk 342834) (llvm/trunk 342856)"
+	.ident	"clang version 14.0.6"
 	.section	".note.GNU-stack","",@progbits

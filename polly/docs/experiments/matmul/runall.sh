@@ -7,45 +7,44 @@ echo "--> 2. Prepare the LLVM-IR for Polly"
 opt -S -polly-canonicalize matmul.ll -o matmul.preopt.ll
 
 echo "--> 3. Show the SCoPs detected by Polly"
-opt -basic-aa -polly-ast -analyze matmul.preopt.ll \
-    -polly-process-unprofitable -polly-use-llvm-names
+opt -basic-aa -polly-ast matmul.preopt.ll \
+    -polly-process-unprofitable --polly-print-ast -polly-use-llvm-names
 
-echo "--> 4.1 Highlight the detected SCoPs in the CFGs of the program"
-# We only create .dot files, as directly -view-scops directly calls graphviz
-# which would require user interaction to continue the script.
-# opt -basic-aa -view-scops -disable-output matmul.preopt.ll
-opt -basic-aa -dot-scops -disable-output matmul.preopt.ll -polly-use-llvm-names
+# echo "--> 4.1 Highlight the detected SCoPs in the CFGs of the program"
+# # We only create .dot files, as directly -view-scops directly calls graphviz
+# # which would require user interaction to continue the script.
+# # opt -basic-aa -view-scops -disable-output matmul.preopt.ll
+# opt -basic-aa -dot-scops -disable-output matmul.preopt.ll -passes=view-cfg -polly-use-llvm-names
 
-echo "--> 4.2 Highlight the detected SCoPs in the CFGs of the program (print \
-no instructions)"
-# We only create .dot files, as directly -view-scops-only directly calls
-# graphviz which would require user interaction to continue the script.
-# opt -basic-aa -view-scops-only -disable-output matmul.preopt.ll
-opt -basic-aa -dot-scops-only -disable-output matmul.preopt.ll -polly-use-llvm-names
+# echo "--> 4.2 Highlight the detected SCoPs in the CFGs of the program (print \
+# no instructions)"
+# # We only create .dot files, as directly -view-scops-only directly calls
+# # graphviz which would require user interaction to continue the script.
+# # opt -basic-aa -view-scops-only -disable-output matmul.preopt.ll
+# opt -basic-aa -dot-scops-only -disable-output matmul.preopt.ll -passes=view-cfg
 
-echo "--> 4.3 Create .png files from the .dot files"
-for i in `ls *.dot`; do dot -Tpng $i > $i.png; done
+# echo "--> 4.3 Create .png files from the .dot files"
+# for i in `ls *.dot`; do dot -Tpng $i > $i.png; done
 
 echo "--> 5. View the polyhedral representation of the SCoPs"
-opt -basic-aa -polly-scops -analyze matmul.preopt.ll \
-    -polly-process-unprofitable -polly-use-llvm-names
+opt -basic-aa --polly-print-scops matmul.preopt.ll -polly-process-unprofitable
 
 echo "--> 6. Show the dependences for the SCoPs"
-opt -basic-aa -polly-dependences -analyze matmul.preopt.ll \
-    -polly-process-unprofitable -polly-use-llvm-names
+opt -basic-aa -polly-dependences matmul.preopt.ll \
+    -polly-process-unprofitable --polly-print-dependences -polly-use-llvm-names
 
 echo "--> 7. Export jscop files"
 opt -basic-aa -polly-export-jscop matmul.preopt.ll \
     -polly-process-unprofitable -disable-output -polly-use-llvm-names
 
 echo "--> 8. Import the updated jscop files and print the new SCoPs. (optional)"
-opt -basic-aa -polly-import-jscop -polly-ast -analyze matmul.preopt.ll \
+opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-process-unprofitable -polly-use-llvm-names
-opt -basic-aa -polly-import-jscop -polly-ast -analyze matmul.preopt.ll \
+opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged -polly-process-unprofitable -polly-use-llvm-names
-opt -basic-aa -polly-import-jscop -polly-ast -analyze matmul.preopt.ll \
+opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged+tiled -polly-process-unprofitable -polly-use-llvm-names
-opt -basic-aa -polly-import-jscop -polly-ast -analyze matmul.preopt.ll \
+opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged+tiled+vector \
     -polly-process-unprofitable -polly-use-llvm-names
 
@@ -82,12 +81,12 @@ gcc matmul.normalopt.s -lgomp -o matmul.normalopt.exe
 echo "--> 11. Compare the runtime of the executables"
 
 echo "time ./matmul.normalopt.exe"
-time -f "%E real, %U user, %S sys" ./matmul.normalopt.exe
+time -p ./matmul.normalopt.exe
 echo "time ./matmul.polly.interchanged.exe"
-time -f "%E real, %U user, %S sys" ./matmul.polly.interchanged.exe
+time -p ./matmul.polly.interchanged.exe
 echo "time ./matmul.polly.interchanged+tiled.exe"
-time -f "%E real, %U user, %S sys" ./matmul.polly.interchanged+tiled.exe
+time -p ./matmul.polly.interchanged+tiled.exe
 echo "time ./matmul.polly.interchanged+tiled+vector.exe"
-time -f "%E real, %U user, %S sys" ./matmul.polly.interchanged+tiled+vector.exe
+time -p ./matmul.polly.interchanged+tiled+vector.exe
 echo "time ./matmul.polly.interchanged+tiled+vector+openmp.exe"
-time -f "%E real, %U user, %S sys" ./matmul.polly.interchanged+tiled+vector+openmp.exe
+time -p ./matmul.polly.interchanged+tiled+vector+openmp.exe

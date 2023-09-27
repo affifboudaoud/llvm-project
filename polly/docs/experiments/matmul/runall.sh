@@ -43,6 +43,8 @@ opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll 
 opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged -polly-process-unprofitable -polly-use-llvm-names
 opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
+    -polly-import-jscop-postfix=reversed -polly-process-unprofitable -polly-use-llvm-names
+opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged+tiled -polly-process-unprofitable -polly-use-llvm-names
 opt -basic-aa -polly-import-jscop -polly-ast --polly-print-ast matmul.preopt.ll \
     -polly-import-jscop-postfix=interchanged+tiled+vector \
@@ -52,23 +54,33 @@ echo "--> 9. Codegenerate the SCoPs"
 opt -S -basic-aa -polly-import-jscop -polly-import-jscop-postfix=interchanged \
     -polly-codegen -polly-process-unprofitable -polly-use-llvm-names \
     matmul.preopt.ll | opt -O3 -S -o matmul.polly.interchanged.ll
+
+opt -S -basic-aa -polly-import-jscop -polly-import-jscop-postfix=reversed \
+    -polly-codegen -polly-process-unprofitable -polly-use-llvm-names \
+    matmul.preopt.ll | opt -O3 -S -o matmul.polly.reversed.ll
+
 opt -S -basic-aa -polly-import-jscop \
     -polly-import-jscop-postfix=interchanged+tiled -polly-codegen \
     matmul.preopt.ll -polly-process-unprofitable -polly-use-llvm-names \
     | opt -O3 -S -o matmul.polly.interchanged+tiled.ll
+
 opt -S -basic-aa -polly-import-jscop -polly-process-unprofitable\
     -polly-import-jscop-postfix=interchanged+tiled+vector -polly-codegen \
     matmul.preopt.ll -polly-vectorizer=polly -polly-use-llvm-names \
     | opt -O3 -S -o matmul.polly.interchanged+tiled+vector.ll
+
 opt -S -basic-aa -polly-import-jscop -polly-process-unprofitable\
     -polly-import-jscop-postfix=interchanged+tiled+vector -polly-codegen \
     matmul.preopt.ll -polly-vectorizer=polly -polly-parallel -polly-use-llvm-names \
     | opt -O3 -S -o matmul.polly.interchanged+tiled+vector+openmp.ll
+
 opt -S matmul.preopt.ll | opt -O3 -S -o matmul.normalopt.ll
 
 echo "--> 10. Create the executables"
 llc matmul.polly.interchanged.ll -o matmul.polly.interchanged.s -relocation-model=pic
 gcc matmul.polly.interchanged.s -o matmul.polly.interchanged.exe
+llc matmul.polly.reversed.ll -o matmul.polly.reversed.s -relocation-model=pic
+gcc matmul.polly.reversed.s -o matmul.polly.reversed.exe
 llc matmul.polly.interchanged+tiled.ll -o matmul.polly.interchanged+tiled.s -relocation-model=pic
 gcc matmul.polly.interchanged+tiled.s -o matmul.polly.interchanged+tiled.exe
 llc matmul.polly.interchanged+tiled+vector.ll -o matmul.polly.interchanged+tiled+vector.s -relocation-model=pic
@@ -84,6 +96,8 @@ echo "time ./matmul.normalopt.exe"
 time -p ./matmul.normalopt.exe
 echo "time ./matmul.polly.interchanged.exe"
 time -p ./matmul.polly.interchanged.exe
+echo "time ./matmul.polly.reversed.exe"
+time -p ./matmul.polly.reversed.exe
 echo "time ./matmul.polly.interchanged+tiled.exe"
 time -p ./matmul.polly.interchanged+tiled.exe
 echo "time ./matmul.polly.interchanged+tiled+vector.exe"

@@ -90,6 +90,7 @@ add_llvm_pass_plugin(Polly
   Transform/CodePreparation.cpp
   Transform/DeadCodeElimination.cpp
   Transform/ScheduleOptimizer.cpp
+  Transform/ReverseSchedule.cpp
   Transform/ScheduleTreeTransform.cpp
   Transform/FlattenSchedule.cpp
   Transform/FlattenAlgo.cpp

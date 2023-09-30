@@ -34,6 +34,7 @@
 #include "polly/PolyhedralInfo.h"
 #include "polly/PruneUnprofitable.h"
 #include "polly/ScheduleOptimizer.h"
+#include "polly/ReverseSchedule.h"
 #include "polly/ScopDetection.h"
 #include "polly/ScopGraphPrinter.h"
 #include "polly/ScopInfo.h"
@@ -254,6 +255,8 @@ void initializePollyPasses(llvm::PassRegistry &Registry) {
   initializeCodegenCleanupPass(Registry);
   initializeFlattenSchedulePass(Registry);
   initializeFlattenSchedulePrinterLegacyPassPass(Registry);
+  initializeReverseSchedulePass(Registry);
+  initializeReverseSchedulePrinterLegacyPassPass(Registry);
   initializeForwardOpTreeWrapperPassPass(Registry);
   initializeForwardOpTreePrinterLegacyPassPass(Registry);
   initializeDeLICMWrapperPassPass(Registry);

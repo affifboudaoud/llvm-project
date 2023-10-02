@@ -1,4 +1,4 @@
-//===------ FlattenSchedule.cpp --------------------------------*- C++ -*-===//
+//===------ ReverseSchedule.cpp --------------------------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -183,8 +183,10 @@ isl::union_pw_aff scheduleExtractDimAff(isl::union_map UMap, unsigned pos) {
 isl::union_map reverseLoop(isl::union_map Schedule) {
   // Reverse the outermost loop in the schedule
   auto FirstAff = scheduleExtractDimAff(Schedule, 0);
-  auto value = isl::val(Schedule.ctx(), -1); 
+  auto value = isl::val(Schedule.ctx(), -1);
+  // Multiply the first dynamic dim by -1
   auto reversed = multiply(FirstAff, value);
+  // Extract the resulting union map and return it
   auto result = isl::union_map::from(reversed.as_multi_union_pw_aff());
   return result;
 }
